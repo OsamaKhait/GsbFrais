@@ -4,8 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Etat;
 use App\Entity\FicheFrais;
+use App\Entity\FraisForfait;
+use App\Entity\LigneFraisForfait;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -128,5 +131,60 @@ class ImportDataController extends AbstractController
 
 
         return new Response('Importation des fiches frais réussie', Response::HTTP_OK);
+    }
+
+    #[Route('/import/ligneff', name: 'app_import_ligneff')]
+    public function importLigneFF(EntityManagerInterface $entity): Response
+    {
+        // Récupérer le chemin du fichier JSON
+        $jsonFile = $this->getParameter('kernel.project_dir') . '/public/ligneff.json';
+
+        // Lire le contenu du fichier JSON
+        $jsonData = file_get_contents($jsonFile);
+
+        // Tenter de décoder le JSON en tableau associatif
+        $data = json_decode($jsonData, true);
+
+        // Vérifier si le JSON a été décodé correctement
+        if ($data === null) {
+            return new Response('Erreur lors du décodage du JSON.', Response::HTTP_BAD_REQUEST);
+        }
+
+        // Parcourir chaque élément du tableau
+        foreach ($data as $ligne) {
+            $user = $entity->getRepository(User::class)->findOneBy(['oldID' => $ligne['idVisiteur']]);
+            if ($user) {
+                $ficheFrais = new FicheFrais();
+                if (isset($ligne['idFicheFrais'])) {
+                    $ficheFrais -> setOldID($ligne['idFicheFrais']);
+                }
+                switch ($ligne->idEtat) {
+                    case 'CL':
+                        $etat = $entity->getRepository(Etat::class)->find(1);
+                        break;
+                    case 'CR':
+                        $etat = $entity->getRepository(Etat::class)->find(2);
+                        break;
+                    case 'RB':
+                        $etat = $entity->getRepository(Etat::class)->find(3);
+                        break;
+                    case 'VA':
+                        $etat = $entity->getRepository(Etat::class)->find(4);
+                        break;
+                    default:
+                        $etat = $entity->getRepository(Etat::class)->find(1);
+                }
+                $ficheFrais->setMois($ligne['mois']);
+                $ficheFrais->setNbJustificatifs($ligne['nbJustificatifs']);
+                $ficheFrais->setMontantValid($ligne['montantValide']);
+                $ficheFrais->setDateModif(new DateTime($ligne['dateModif']));
+                $ficheFrais->setEtat($etat);
+
+
+
+            }
+        }
+
+        return new Response('Importation des lignes de frais forfaitaires réussie', Response::HTTP_OK);
     }
 }

@@ -53,6 +53,8 @@ class FicheFrais
         $this->lignefraishorsforfait = new ArrayCollection();
     }
 
+    #[ORM\Column]
+    private ?int $oldID = null;
     public function getId(): ?int
     {
         return $this->id;
@@ -181,6 +183,17 @@ class FicheFrais
     public function setEtat(?Etat $etat): static
     {
         $this->etat = $etat;
+
+        return $this;
+    }
+    public function getOldID(): ?int
+    {
+        return $this->oldID;
+    }
+
+    public function setOldID(int $oldID): static
+    {
+        $this->oldID = $oldID;
 
         return $this;
     }
