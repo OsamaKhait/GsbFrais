@@ -36,12 +36,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $login = null;
-
-    #[ORM\Column(type: Types::ARRAY)]
-    private array $role = [];
-
-    #[ORM\Column(length: 255)]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
@@ -57,10 +51,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $ville = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $dateEmbauche = null;
+    private ?DateTimeInterface $dateEmbauche = null;
 
     #[ORM\Column]
-    private ?int $oldID = null;
+    private bool $isVerified = false;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $googleAuthenticatorSecret = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isTwoFactorEnabled = false;
+
+    /**
+     * @var Collection<int, FicheFrais>
+     */
+    #[ORM\OneToMany(targetEntity: FicheFrais::class, mappedBy: 'user')]
+    private Collection $fichefrais;
+
+    #[ORM\Column(length: 100)]
+    private ?string $old_id = null;
+
+    public function __construct()
+    {
+        $this->fichefrais = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -97,7 +111,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
@@ -135,30 +148,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
-    }
-
-    public function getLogin(): ?string
-    {
-        return $this->login;
-    }
-
-    public function setLogin(string $login): static
-    {
-        $this->login = $login;
-
-        return $this;
-    }
-
-    public function getRole(): array
-    {
-        return $this->role;
-    }
-
-    public function setRole(array $role): static
-    {
-        $this->role = $role;
-
-        return $this;
     }
 
     public function getNom(): ?string
@@ -221,26 +210,55 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getDateEmbauche(): ?\DateTimeInterface
+    public function getDateEmbauche(): ?DateTimeInterface
     {
         return $this->dateEmbauche;
     }
 
-    public function setDateEmbauche(\DateTimeInterface $dateEmbauche): static
+    public function setDateEmbauche(DateTimeInterface $dateEmbauche): static
     {
         $this->dateEmbauche = $dateEmbauche;
 
         return $this;
     }
 
-    public function getOldID(): ?int
+    /**
+     * @return Collection<int, FicheFrais>
+     */
+    public function getFichefrais(): Collection
     {
-        return $this->oldID;
+        return $this->fichefrais;
     }
 
-    public function setOldID(int $oldID): static
+    public function addFichefrai(FicheFrais $fichefrai): static
     {
-        $this->oldID = $oldID;
+        if (!$this->fichefrais->contains($fichefrai)) {
+            $this->fichefrais->add($fichefrai);
+            $fichefrai->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFichefrai(FicheFrais $fichefrai): static
+    {
+        if ($this->fichefrais->removeElement($fichefrai)) {
+            if ($fichefrai->getUser() === $this) {
+                $fichefrai->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getOldId(): ?string
+    {
+        return $this->old_id;
+    }
+
+    public function setOldId(string $old_id): static
+    {
+        $this->old_id = $old_id;
 
         return $this;
     }

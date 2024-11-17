@@ -8,7 +8,7 @@ use App\Entity\FraisForfait;
 use App\Entity\LigneFraisForfait;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,6 +16,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class ImportDataController extends AbstractController
 {
+    private $doctrine;
+
     #[Route('/import/data', name: 'app_import_data')]
     public function index(EntityManagerInterface $entity, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -37,7 +39,7 @@ class ImportDataController extends AbstractController
         foreach ($data as $userorigin) {
             $user = new User();
 
-            $user->setOldID((int) $userorigin['id']);
+            $user->setOldId((int) $userorigin['id']);
             $user->setNom($userorigin['nom']);
             $user->setPrenom($userorigin['prenom']);
 
@@ -64,12 +66,12 @@ class ImportDataController extends AbstractController
             $entity->persist($user);
         }
 
-
         // Flush after persisting all users
         $entity->flush();
 
         return new Response('Importation réussie', Response::HTTP_OK);
     }
+
     #[Route('/import/fichefrais', name: 'app_import_fichefrais')]
     public function importFicheFrais(EntityManagerInterface $entity): Response
     {
@@ -127,64 +129,59 @@ class ImportDataController extends AbstractController
         }
 
         // Flush after persisting all fiche frais
-            $entity->flush();
-
+        $entity->flush();
 
         return new Response('Importation des fiches frais réussie', Response::HTTP_OK);
     }
 
     #[Route('/import/ligneff', name: 'app_import_ligneff')]
-    public function importLigneFF(EntityManagerInterface $entity): Response
+    public function importLigneFrais(EntityManagerInterface $entityManager): Response
     {
-        // Récupérer le chemin du fichier JSON
-        $jsonFile = $this->getParameter('kernel.project_dir') . '/public/ligneff.json';
+        $path = $this->getParameter('kernel.project_dir') . '/public/lignefraisforfait.json';
+        $jsonData = file_get_contents($path);
+        $data = json_decode($jsonData);
 
-        // Lire le contenu du fichier JSON
-        $jsonData = file_get_contents($jsonFile);
-
-        // Tenter de décoder le JSON en tableau associatif
-        $data = json_decode($jsonData, true);
-
-        // Vérifier si le JSON a été décodé correctement
         if ($data === null) {
-            return new Response('Erreur lors du décodage du JSON.', Response::HTTP_BAD_REQUEST);
+            throw new Exception('Failed to decode JSON data.');
         }
 
-        // Parcourir chaque élément du tableau
-        foreach ($data as $ligne) {
-            $user = $entity->getRepository(User::class)->findOneBy(['oldID' => $ligne['idVisiteur']]);
-            if ($user) {
-                $ficheFrais = new FicheFrais();
-                if (isset($ligne['idFicheFrais'])) {
-                    $ficheFrais -> setOldID($ligne['idFicheFrais']);
+        foreach ($data as $item) {
+            $ficheFrais = $entityManager->getRepository(FicheFrais::class)->findOneBy([
+                'user' => $entityManager->getRepository(User::class)->findOneBy(['old_id' => $item->idVisiteur]),
+                'mois' => $item->mois
+            ]);
+
+            if ($ficheFrais) {
+                $ligneFrais = new LigneFraisForfait();
+                $ligneFrais->setFicheFrais($ficheFrais);
+
+                switch ($item->idFraisForfait) {
+                    case 'ETP':
+                        $ligneFrais->setFraisforfait($entityManager->getRepository(FraisForfait::class)->find(1));
+                        break;
+                    case 'KM':
+                        $ligneFrais->setFraisforfait($entityManager->getRepository(FraisForfait::class)->find(2));
+                        break;
+                    case 'NUI':
+                        $ligneFrais->setFraisforfait($entityManager->getRepository(FraisForfait::class)->find(3));
+                        break;
+                    case 'REP':
+                        $ligneFrais->setFraisforfait($entityManager->getRepository(FraisForfait::class)->find(4));
+                        break;
                 }
-                switch ($ligne->idEtat) {
-                    case 'CL':
-                        $etat = $entity->getRepository(Etat::class)->find(1);
-                        break;
-                    case 'CR':
-                        $etat = $entity->getRepository(Etat::class)->find(2);
-                        break;
-                    case 'RB':
-                        $etat = $entity->getRepository(Etat::class)->find(3);
-                        break;
-                    case 'VA':
-                        $etat = $entity->getRepository(Etat::class)->find(4);
-                        break;
-                    default:
-                        $etat = $entity->getRepository(Etat::class)->find(1);
-                }
-                $ficheFrais->setMois($ligne['mois']);
-                $ficheFrais->setNbJustificatifs($ligne['nbJustificatifs']);
-                $ficheFrais->setMontantValid($ligne['montantValide']);
-                $ficheFrais->setDateModif(new DateTime($ligne['dateModif']));
-                $ficheFrais->setEtat($etat);
 
-
-
+                $ligneFrais->setQuantite($item->quantite);
+                $entityManager->persist($ligneFrais);
+            } else {
+                throw new Exception('FicheFrais not found for idVisiteur: ' . $item->idVisiteur . ' and mois: ' . $item->mois);
             }
         }
 
-        return new Response('Importation des lignes de frais forfaitaires réussie', Response::HTTP_OK);
+        $entityManager->flush();
+
+        return $this->render('import_data/index.html.twig', [
+            'controller_name' => 'ImportDataController',
+        ]);
     }
+
 }
