@@ -3,9 +3,16 @@
 {% block title %}New FraisForfait{% endblock %}
 
 {% block body %}
-    <h1>Create new FraisForfait</h1>
+    <div class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+        <h1 class="text-3xl font-semibold text-gray-800 mb-6">Create New FraisForfait</h1>
 
-    {{ include('frais_forfait/_form.html.twig') }}
+        {{ include('frais_forfait/_form.html.twig') }}
 
-    <a href="{{ path('app_frais_forfait_index') }}">back to list</a>
+        <div class="mt-6 flex justify-between">
+            <a href="{{ path('app_frais_forfait_index') }}"
+               class="inline-block px-6 py-2 bg-gray-500 text-white font-medium rounded-md hover:bg-gray-600 focus:outline-none focus:ring focus:ring-gray-300 transition duration-150">
+                Back to List
+            </a>
+        </div>
+    </div>
 {% endblock %}

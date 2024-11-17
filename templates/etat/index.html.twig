@@ -1,35 +1,63 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Etat index{% endblock %}
+{% block title %}Etat Index{% endblock %}
 
 {% block body %}
-    <h1>Etat index</h1>
+    <div class="container mx-auto my-8 p-6 bg-white rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Etat Index</h1>
 
-    <table class="table">
-        <thead>
+        <table class="min-w-full table-auto border border-gray-300 bg-white text-gray-800">
+            <thead class="bg-gray-200">
             <tr>
-                <th>Id</th>
-                <th>Libelle</th>
-                <th>actions</th>
+                <th class="border border-gray-300 px-4 py-2 text-left font-semibold">Id</th>
+                <th class="border border-gray-300 px-4 py-2 text-left font-semibold">Libelle</th>
+                <th class="border border-gray-300 px-4 py-2 text-left font-semibold">Actions</th>
             </tr>
-        </thead>
-        <tbody>
-        {% for etat in etats %}
-            <tr>
-                <td>{{ etat.id }}</td>
-                <td>{{ etat.libelle }}</td>
-                <td>
-                    <a href="{{ path('app_etat_show', {'id': etat.id}) }}">show</a>
-                    <a href="{{ path('app_etat_edit', {'id': etat.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="3">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for etat in etats %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="border border-gray-300 px-4 py-2">{{ etat.id }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ etat.libelle }}</td>
+                    <td class="border border-gray-300 px-4 py-2 space-x-4">
+                        <a
+                                href="{{ path('app_etat_show', {'id': etat.id}) }}"
+                                class="text-blue-600 hover:text-blue-800 transition"
+                        >
+                            Show
+                        </a>
+                        <a
+                                href="{{ path('app_etat_edit', {'id': etat.id}) }}"
+                                class="text-green-600 hover:text-green-800 transition"
+                        >
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="3" class="border border-gray-300 px-4 py-2 text-center text-gray-500">
+                        No records found
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
-    <a href="{{ path('app_etat_new') }}">Create new</a>
+        <div class="mt-6 text-right">
+            <a
+                    href="{{ path('app_etat_new') }}"
+                    class="
+                    inline-block px-6 py-2
+                    bg-blue-500 text-white
+                    font-medium rounded-md
+                    hover:bg-blue-600
+                    focus:outline-none focus:ring focus:ring-blue-300
+                    transition duration-150 ease-in-out
+                "
+            >
+                Create New
+            </a>
+        </div>
+    </div>
 {% endblock %}

@@ -3,15 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -20,12 +20,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
     #[ORM\Column]
     private array $roles = [];
 
@@ -36,10 +33,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $nom = null;
+    private ?string $prenom = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $prenom = null;
+    private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
     private ?string $adresse = null;
@@ -51,29 +48,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $ville = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?DateTimeInterface $dateEmbauche = null;
+    private ?\DateTimeInterface $dateEmbauche = null;
 
-    #[ORM\Column]
-    private bool $isVerified = false;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: FicheFrais::class, orphanRemoval: true, fetch: 'EAGER')]
+    private Collection $ficheFrais;
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $googleAuthenticatorSecret = null;
+    #[ORM\Column(length: 255)]
+    private ?string $oldId = null;
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $isTwoFactorEnabled = false;
 
-    /**
-     * @var Collection<int, FicheFrais>
-     */
-    #[ORM\OneToMany(targetEntity: FicheFrais::class, mappedBy: 'user')]
-    private Collection $fichefrais;
-
-    #[ORM\Column(length: 100)]
-    private ?string $old_id = null;
 
     public function __construct()
     {
-        $this->fichefrais = new ArrayCollection();
+        $this->ficheFrais = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -105,20 +92,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
-     *
-     * @return list<string>
      */
     public function getRoles(): array
     {
         $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -129,7 +112,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see PasswordAuthenticatedUserInterface
      */
-    public function getPassword(): ?string
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -150,18 +133,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
-    public function getNom(): ?string
-    {
-        return $this->nom;
-    }
-
-    public function setNom(string $nom): static
-    {
-        $this->nom = $nom;
-
-        return $this;
-    }
-
     public function getPrenom(): ?string
     {
         return $this->prenom;
@@ -170,6 +141,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
+
+        return $this;
+    }
+
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): static
+    {
+        $this->nom = $nom;
 
         return $this;
     }
@@ -210,12 +193,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getDateEmbauche(): ?DateTimeInterface
+    public function getDateEmbauche(): ?\DateTimeInterface
     {
         return $this->dateEmbauche;
     }
 
-    public function setDateEmbauche(DateTimeInterface $dateEmbauche): static
+    public function setDateEmbauche(\DateTimeInterface $dateEmbauche): static
     {
         $this->dateEmbauche = $dateEmbauche;
 
@@ -225,26 +208,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, FicheFrais>
      */
-    public function getFichefrais(): Collection
+    public function getFicheFrais(): Collection
     {
-        return $this->fichefrais;
+        return $this->ficheFrais;
     }
 
-    public function addFichefrai(FicheFrais $fichefrai): static
+    public function addFicheFrai(FicheFrais $ficheFrai): static
     {
-        if (!$this->fichefrais->contains($fichefrai)) {
-            $this->fichefrais->add($fichefrai);
-            $fichefrai->setUser($this);
+        if (!$this->ficheFrais->contains($ficheFrai)) {
+            $this->ficheFrais->add($ficheFrai);
+            $ficheFrai->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeFichefrai(FicheFrais $fichefrai): static
+    public function removeFicheFrai(FicheFrais $ficheFrai): static
     {
-        if ($this->fichefrais->removeElement($fichefrai)) {
-            if ($fichefrai->getUser() === $this) {
-                $fichefrai->setUser(null);
+        if ($this->ficheFrais->removeElement($ficheFrai)) {
+            // set the owning side to null (unless already changed)
+            if ($ficheFrai->getUser() === $this) {
+                $ficheFrai->setUser(null);
             }
         }
 
@@ -253,13 +237,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getOldId(): ?string
     {
-        return $this->old_id;
+        return $this->oldId;
     }
 
-    public function setOldId(string $old_id): static
+    public function setOldId(string $oldId): static
     {
-        $this->old_id = $old_id;
+        $this->oldId = $oldId;
 
         return $this;
     }
+
+    public function getFicheFraisByMonth($month): ?FicheFrais
+    {
+        foreach ($this->ficheFrais as $ficheFrais) {
+            if ($ficheFrais->getMois() == $month) {
+                return $ficheFrais;
+            }
+        }
+        return null;
+    }
+
 }

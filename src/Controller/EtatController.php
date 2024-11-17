@@ -9,12 +9,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/etat')]
-final class EtatController extends AbstractController
+class EtatController extends AbstractController
 {
-    #[Route(name: 'app_etat_index', methods: ['GET'])]
+    #[Route('/', name: 'app_etat_index', methods: ['GET'])]
     public function index(EtatRepository $etatRepository): Response
     {
         return $this->render('etat/index.html.twig', [
@@ -71,7 +71,7 @@ final class EtatController extends AbstractController
     #[Route('/{id}', name: 'app_etat_delete', methods: ['POST'])]
     public function delete(Request $request, Etat $etat, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$etat->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$etat->getId(), $request->request->get('_token'))) {
             $entityManager->remove($etat);
             $entityManager->flush();
         }

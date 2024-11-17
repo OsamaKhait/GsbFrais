@@ -8,12 +8,27 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<FicheFrais>
+ *
+ * @method FicheFrais|null find($id, $lockMode = null, $lockVersion = null)
+ * @method FicheFrais|null findOneBy(array $criteria, array $orderBy = null)
+ * @method FicheFrais[]    findAll()
+ * @method FicheFrais[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class FicheFraisRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FicheFrais::class);
+    }
+
+    public function findByYear($year): ?array
+    {
+        return $this->createQueryBuilder('ff')
+            ->where('ff.mois LIKE :valYear')
+            ->setParameter('valYear', $year.'%')
+            ->getQuery()
+            ->getResult()
+            ;
     }
 
 //    /**

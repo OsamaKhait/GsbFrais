@@ -3,11 +3,21 @@
 {% block title %}Edit Etat{% endblock %}
 
 {% block body %}
-    <h1>Edit Etat</h1>
+    <div class="container mx-auto my-8 p-6 bg-white rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Edit Etat</h1>
 
-    {{ include('etat/_form.html.twig', {'button_label': 'Update'}) }}
+        <div class="mb-6">
+            {{ include('etat/_form.html.twig', {'button_label': 'Update'}) }}
+        </div>
 
-    <a href="{{ path('app_etat_index') }}">back to list</a>
-
-    {{ include('etat/_delete_form.html.twig') }}
+        <div class="flex justify-between items-center mt-6">
+            <a
+                    href="{{ path('app_etat_index') }}"
+                    class="text-blue-600 hover:text-blue-800 font-medium transition duration-150"
+            >
+                Back to list
+            </a>
+            {{ include('etat/_delete_form.html.twig') }}
+        </div>
+    </div>
 {% endblock %}

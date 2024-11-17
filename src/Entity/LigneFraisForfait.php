@@ -16,24 +16,16 @@ class LigneFraisForfait
     #[ORM\Column]
     private ?int $quantite = null;
 
-    #[ORM\ManyToOne(inversedBy: 'lignefraisforfait')]
+    #[ORM\ManyToOne(inversedBy: 'ligneFraisForfait')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?FicheFrais $fichefrais = null;
+    private ?FicheFrais $ficheFrais = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?FraisForfait $fraisforfait = null;
+    #[ORM\ManyToOne(inversedBy: 'ligneFraisForfait')]
+    private ?FraisForfait $fraisForfait = null;
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setId(int $id): static
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     public function getQuantite(): ?int
@@ -48,26 +40,26 @@ class LigneFraisForfait
         return $this;
     }
 
-    public function getFichefrais(): ?FicheFrais
+    public function getFicheFrais(): ?FicheFrais
     {
-        return $this->fichefrais;
+        return $this->ficheFrais;
     }
 
-    public function setFichefrais(?FicheFrais $fichefrais): static
+    public function setFicheFrais(?FicheFrais $ficheFrais): static
     {
-        $this->fichefrais = $fichefrais;
+        $this->ficheFrais = $ficheFrais;
 
         return $this;
     }
 
-    public function getFraisforfait(): ?FraisForfait
+    public function getFraisForfait(): ?FraisForfait
     {
-        return $this->fraisforfait;
+        return $this->fraisForfait;
     }
 
-    public function setFraisforfait(?FraisForfait $fraisforfait): static
+    public function setFraisForfait(?FraisForfait $fraisForfait): static
     {
-        $this->fraisforfait = $fraisforfait;
+        $this->fraisForfait = $fraisForfait;
 
         return $this;
     }

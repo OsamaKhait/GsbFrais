@@ -18,27 +18,17 @@ class Etat
     #[ORM\Column(length: 255)]
     private ?string $libelle = null;
 
-    /**
-     * @var Collection<int, FicheFrais>
-     */
-    #[ORM\OneToMany(targetEntity: FicheFrais::class, mappedBy: 'etat')]
-    private Collection $fichefrais;
+    #[ORM\OneToMany(mappedBy: 'etat', targetEntity: FicheFrais::class, orphanRemoval: true)]
+    private Collection $ficheFrais;
 
     public function __construct()
     {
-        $this->fichefrais = new ArrayCollection();
+        $this->ficheFrais = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setId(int $id): static
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     public function getLibelle(): ?string
@@ -56,30 +46,27 @@ class Etat
     /**
      * @return Collection<int, FicheFrais>
      */
-    public function getFichefrais(): Collection
+    public function getFicheFrais(): Collection
     {
-        return $this->fichefrais;
+        return $this->ficheFrais;
     }
 
-    public function addFichefrai(FicheFrais $fichefrai): static
+    public function addFicheFrai(FicheFrais $ficheFrai): static
     {
-        if (!$this->fichefrais->contains($fichefrai)) {
-            $this->fichefrais->add($fichefrai);
-            $fichefrai->setEtat($this);
+        if (!$this->ficheFrais->contains($ficheFrai)) {
+            $this->ficheFrais->add($ficheFrai);
+            $ficheFrai->setEtat($this);
         }
 
         return $this;
     }
 
-    public function removeFichefrai(FicheFrais $fichefrai): static
+    public function removeFicheFrai(FicheFrais $ficheFrai): static
     {
-        if ($this->fichefrais->removeElement($fichefrai)) {
+        if ($this->ficheFrais->removeElement($ficheFrai)&&$ficheFrai->getEtat() === $this) {
             // set the owning side to null (unless already changed)
-            if ($fichefrai->getEtat() === $this) {
-                $fichefrai->setEtat(null);
-            }
+            $ficheFrai->setEtat(null);
         }
-
         return $this;
     }
 }

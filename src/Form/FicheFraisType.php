@@ -2,35 +2,43 @@
 
 namespace App\Form;
 
-use App\Entity\Etat;
 use App\Entity\FicheFrais;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class FicheFraisType extends AbstractType
 {
+
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('mois')
-            ->add('nbJustificatifs')
-            ->add('montantValid')
-            ->add('dateModif', null, [
-                'widget' => 'single_text',
+            ->add('listMois', ChoiceType::class, [
+                'label'=>' Selectionnez le mois : ',
+                'choices' => $options['data'],
+                'data' => new \DateTime('now'),
+                'choice_label'=> function($choice): string{
+                    $date = \DateTimeImmutable::createFromFormat('Ym',$choice->getMois());
+                    return $date->format('F - Y');
+                }
+
             ])
-            ->add('etat', EntityType::class, [
-                'class' => Etat::class,
-                'choice_label' => 'id',
-            ])
-        ;
+            ->add('submit', SubmitType::class, [
+                'label' => 'Voir la fiche',  // Texte du bouton
+                'attr' => [
+                    'class' => 'btn btn-warning',  // Classes CSS du bouton
+                    'style' => 'font-size: 16px;', // Styles CSS supplémentaires
+                ],
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => FicheFrais::class,
+
         ]);
     }
 }

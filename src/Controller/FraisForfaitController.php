@@ -9,12 +9,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/frais/forfait')]
-final class FraisForfaitController extends AbstractController
+class FraisForfaitController extends AbstractController
 {
-    #[Route(name: 'app_frais_forfait_index', methods: ['GET'])]
+    #[Route('/', name: 'app_frais_forfait_index', methods: ['GET'])]
     public function index(FraisForfaitRepository $fraisForfaitRepository): Response
     {
         return $this->render('frais_forfait/index.html.twig', [
@@ -71,7 +71,7 @@ final class FraisForfaitController extends AbstractController
     #[Route('/{id}', name: 'app_frais_forfait_delete', methods: ['POST'])]
     public function delete(Request $request, FraisForfait $fraisForfait, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$fraisForfait->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$fraisForfait->getId(), $request->request->get('_token'))) {
             $entityManager->remove($fraisForfait);
             $entityManager->flush();
         }

@@ -3,35 +3,41 @@
 {% block title %}FraisForfait index{% endblock %}
 
 {% block body %}
-    <h1>FraisForfait index</h1>
+    <div class="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-md">
+        <h1 class="text-3xl font-semibold text-gray-800 mb-6">FraisForfait Index</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Libelle</th>
-                <th>Montant</th>
-                <th>actions</th>
+        <table class="min-w-full table-auto border-collapse mb-6">
+            <thead class="bg-gray-100">
+            <tr class="border-b">
+                <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Id</th>
+                <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Libelle</th>
+                <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Montant</th>
+                <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
             </tr>
-        </thead>
-        <tbody>
-        {% for frais_forfait in frais_forfaits %}
-            <tr>
-                <td>{{ frais_forfait.id }}</td>
-                <td>{{ frais_forfait.libelle }}</td>
-                <td>{{ frais_forfait.montant }}</td>
-                <td>
-                    <a href="{{ path('app_frais_forfait_show', {'id': frais_forfait.id}) }}">show</a>
-                    <a href="{{ path('app_frais_forfait_edit', {'id': frais_forfait.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for frais_forfait in frais_forfaits %}
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-6 py-4 text-sm text-gray-800">{{ frais_forfait.id }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-800">{{ frais_forfait.libelle }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-800">{{ frais_forfait.montant }}</td>
+                    <td class="px-6 py-4 text-sm">
+                        <a href="{{ path('app_frais_forfait_show', {'id': frais_forfait.id}) }}" class="text-blue-600 hover:text-blue-800">Show</a>
+                        <a href="{{ path('app_frais_forfait_edit', {'id': frais_forfait.id}) }}" class="ml-4 text-blue-600 hover:text-blue-800">Edit</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-600">No records found</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
-    <a href="{{ path('app_frais_forfait_new') }}">Create new</a>
+        <div class="mt-6">
+            <a href="{{ path('app_frais_forfait_new') }}" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-150">
+                Create new
+            </a>
+        </div>
+    </div>
 {% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fiches{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto p-6 bg-gray-50">
+        <h1 class="text-center text-3xl font-semibold text-gray-800 mb-8">Afficher une fiche</h1>
+
+        {{ form_start(form) }}
+        <div class="mb-6">
+            {{ form_row(form.fichesFrais) }}
+        </div>
+        {{ form_end(form) }}
+
+        {% if selectedFiche is not null %}
+
+            <br>
+
+            <div class="mb-8">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <table class="min-w-full table-auto">
+                        <thead>
+                        <tr class="bg-gray-200 text-gray-700">
+                            <th class="px-6 py-4 text-left">Mois</th>
+                            <th class="px-6 py-4 text-left">NbJustificatifs</th>
+                            <th class="px-6 py-4 text-left">MontantValid</th>
+                            <th class="px-6 py-4 text-left">DateModif</th>
+                            <th class="px-6 py-4 text-left">État ID</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="border-b border-gray-300">
+                            <td class="px-6 py-4">{{ selectedFiche.moisFormatted | date('m-Y') }}</td>
+                            <td class="px-6 py-4">{{ selectedFiche.nbJustificatifs }}</td>
+                            <td class="px-6 py-4">{{ selectedFiche.montantValid }}</td>
+                            <td class="px-6 py-4">{{ selectedFiche.dateModif | date('Y-m-d H:i:s') }}</td>
+                            <td class="px-6 py-4">{{ selectedFiche.etat.libelle }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <h3 class="text-2xl font-semibold text-gray-800 mb-6">Frais Forfait:</h3>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <table class="min-w-full table-auto">
+                    <thead>
+                    <tr class="bg-gray-200 text-gray-700">
+                        <th class="px-6 py-4 text-left">Quantité</th>
+                        <th class="px-6 py-4 text-left">Libelle</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for ligne in selectedFiche.ligneFraisForfait %}
+                        {% if ligne.fraisforfait is not null %}
+                            <tr class="border-b border-gray-300">
+                                <td class="px-6 py-4">{{ ligne.quantite }}</td>
+                                <td class="px-6 py-4">{{ ligne.fraisforfait.libelle }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="text-2xl font-semibold text-gray-800 mb-6">Frais Hors Forfait:</h3>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <table class="min-w-full table-auto">
+                    <thead>
+                    <tr class="bg-gray-200 text-gray-700">
+                        <th class="px-6 py-4 text-left">Libelle</th>
+                        <th class="px-6 py-4 text-left">Montant</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for ligneHors in selectedFiche.ligneFraisHorsForfait %}
+                        <tr class="border-b border-gray-300">
+                            <td class="px-6 py-4">{{ ligneHors.libelle }}</td>
+                            <td class="px-6 py-4">{{ ligneHors.montant }} €</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

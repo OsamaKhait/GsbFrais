@@ -3,13 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\FicheFraisRepository;
-use DateTime;
-use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
 
 #[ORM\Entity(repositoryClass: FicheFraisRepository::class)]
 class FicheFrais
@@ -19,40 +16,63 @@ class FicheFrais
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?DateTimeInterface $mois = null;
+    #[ORM\Column(length: 255)]
+    private ?string $mois = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column]
     private ?int $nbJustificatifs = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 6, scale: 2)]
     private ?string $montantValid = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?DateTimeInterface $dateModif = null;
+    private ?\DateTimeInterface $dateModif = null;
 
-    #[ORM\ManyToOne(inversedBy: 'fichefrais')]
+    #[ORM\ManyToOne(inversedBy: 'ficheFrais')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(inversedBy: 'fichesFrais')]
+    #[ORM\ManyToOne(inversedBy: 'ficheFrais')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Etat $etat = null;
 
-    /**
-     * @var Collection<int, LigneFraisForfait>
-     */
-    #[ORM\OneToMany(targetEntity: LigneFraisForfait::class, mappedBy: 'fichesFrais')]
-    private Collection $lignefraisforfaits;
+    #[ORM\OneToMany(mappedBy: 'ficheFrais', targetEntity: LigneFraisForfait::class, orphanRemoval: true)]
+    private Collection $ligneFraisForfait;
 
-    /**
-     * @var Collection<int, LigneFraisHorsForfait>
-     */
-    #[ORM\OneToMany(targetEntity: LigneFraisHorsForfait::class, mappedBy: 'fichesFrais')]
-    private Collection $lignesfraishorsforfait;
+    #[ORM\OneToMany(mappedBy: 'ficheFrais', targetEntity: LigneFraisHorsForfait::class, orphanRemoval: true, cascade: ["persist"])]
+    private Collection $ligneFraisHorsForfait;
 
     public function __construct()
     {
-        $this->lignefraisforfaits = new ArrayCollection();
-        $this->lignesfraishorsforfait = new ArrayCollection();
+        $this->ligneFraisForfait = new ArrayCollection();
+        $this->ligneFraisHorsForfait = new ArrayCollection();
+    }
+
+    public function getCumul(): float
+    {
+        $tot = 0;
+
+        foreach ($this->ligneFraisHorsForfait as $ligne) {
+            // Assuming that getMontant returns a float value
+            $tot += $ligne->getMontant();
+        }
+
+        return $tot;
+    }
+
+    public function cumulLigneForfait()
+    {
+        $tot = 0;
+
+        foreach ($this->ligneFraisForfait as $ligne) {
+            // Check if the FraisForfait object exists
+            if ($ligne->getFraisForfait() !== null) {
+                // Assuming that getMontant returns a float value
+                $tot += $ligne->getQuantite() * $ligne->getFraisForfait()->getMontant();
+            }
+        }
+
+        return $tot;
     }
 
     public function getId(): ?int
@@ -60,17 +80,18 @@ class FicheFrais
         return $this->id;
     }
 
-    public function getMois(): ?DateTimeInterface
+    public function getMois(): ?string
     {
         return $this->mois;
     }
 
+    public function getMoisFormatted(): ?\DateTimeImmutable
+    {
+        return \DateTimeImmutable::createFromFormat('Ym', $this->mois);
+    }
     public function setMois(string $mois): static
     {
-        $this->mois = DateTime::createFromFormat('Ym', $mois);
-        if ($this->mois === false) {
-            throw new Exception("Invalid date format for mois: $mois");
-        }
+        $this->mois = $mois;
 
         return $this;
     }
@@ -80,7 +101,7 @@ class FicheFrais
         return $this->nbJustificatifs;
     }
 
-    public function setNbJustificatifs(?int $nbJustificatifs): static
+    public function setNbJustificatifs(int $nbJustificatifs): static
     {
         $this->nbJustificatifs = $nbJustificatifs;
 
@@ -92,19 +113,19 @@ class FicheFrais
         return $this->montantValid;
     }
 
-    public function setMontantValid(?string $montantValid): static
+    public function setMontantValid(string $montantValid): static
     {
         $this->montantValid = $montantValid;
 
         return $this;
     }
 
-    public function getDateModif(): ?DateTimeInterface
+    public function getDateModif(): ?\DateTimeInterface
     {
         return $this->dateModif;
     }
 
-    public function setDateModif(DateTimeInterface $dateModif): static
+    public function setDateModif(\DateTimeInterface $dateModif): static
     {
         $this->dateModif = $dateModif;
 
@@ -138,28 +159,27 @@ class FicheFrais
     /**
      * @return Collection<int, LigneFraisForfait>
      */
-    public function getLignefraisforfaits(): Collection
+    public function getLigneFraisForfait(): Collection
     {
-        return $this->lignefraisforfaits;
+        return $this->ligneFraisForfait;
     }
 
-    public function addLignefraisforfait(LigneFraisForfait $lignefraisforfait): static
+    public function addLigneFraisForfait(LigneFraisForfait $ligneFraisForfait): static
     {
-        if (!$this->lignefraisforfaits->contains($lignefraisforfait)) {
-            $this->lignefraisforfaits->add($lignefraisforfait);
-            $lignefraisforfait->setFichesFrais($this);
+        if (!$this->ligneFraisForfait->contains($ligneFraisForfait)) {
+            $this->ligneFraisForfait->add($ligneFraisForfait);
+            $ligneFraisForfait->setFicheFrais($this);
         }
 
         return $this;
     }
 
-    public function removeLignefraisforfait(LigneFraisForfait $lignefraisforfait): static
+    public function removeLigneFraisForfait(LigneFraisForfait $ligneFraisForfait): static
     {
-        if ($this->lignefraisforfaits->removeElement($lignefraisforfait)) {
+        if ($this->ligneFraisForfait->removeElement($ligneFraisForfait) && $ligneFraisForfait->getFicheFrais()===$this)
+        {
             // set the owning side to null (unless already changed)
-            if ($lignefraisforfait->getFichesFrais() === $this) {
-                $lignefraisforfait->setFichesFrais(null);
-            }
+                $ligneFraisForfait->setFicheFrais(null);
         }
 
         return $this;
@@ -168,34 +188,30 @@ class FicheFrais
     /**
      * @return Collection<int, LigneFraisHorsForfait>
      */
-    public function getLignesfraishorsforfait(): Collection
+    public function getLigneFraisHorsForfait(): Collection
     {
-        return $this->lignesfraishorsforfait;
+        return $this->ligneFraisHorsForfait;
     }
 
-    public function addLignesfraishorsforfait(LigneFraisHorsForfait $lignesfraishorsforfait): static
+    public function addLigneFraisHorsForfait(LigneFraisHorsForfait $ligneFraisHorsForfait): static
     {
-        if (!$this->lignesfraishorsforfait->contains($lignesfraishorsforfait)) {
-            $this->lignesfraishorsforfait->add($lignesfraishorsforfait);
-            $lignesfraishorsforfait->setFichesFrais($this);
+        if (!$this->ligneFraisHorsForfait->contains($ligneFraisHorsForfait)) {
+            $this->ligneFraisHorsForfait->add($ligneFraisHorsForfait);
+            $ligneFraisHorsForfait->setFicheFrais($this);
         }
 
         return $this;
     }
 
-    public function removeLignesfraishorsforfait(LigneFraisHorsForfait $lignesfraishorsforfait): static
+    public function removeLigneFraisHorsForfait(LigneFraisHorsForfait $ligneFraisHorsForfait): static
     {
-        if ($this->lignesfraishorsforfait->removeElement($lignesfraishorsforfait)) {
+        if ($this->ligneFraisHorsForfait->removeElement($ligneFraisHorsForfait)) {
             // set the owning side to null (unless already changed)
-            if ($lignesfraishorsforfait->getFichesFrais() === $this) {
-                $lignesfraishorsforfait->setFichesFrais(null);
+            if ($ligneFraisHorsForfait->getFicheFrais() === $this) {
+                $ligneFraisHorsForfait->setFicheFrais(null);
             }
         }
 
         return $this;
-    }
-
-    public function setOldId($id)
-    {
     }
 }

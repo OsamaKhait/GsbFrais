@@ -1,17 +1,57 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block stylesheets %}
+    {% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-900">
+<nav class="bg-white shadow-md py-4 px-6">
+    <div class="flex items-center justify-between">
+        <div class="text-xl font-semibold text-gray-800">
+            <a href="/" class="hover:text-gray-600">Accueil</a>
+        </div>
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+        <div class="space-x-6 hidden md:flex">
+            <a href="{{ path('app_afficher_fiches') }}" class="text-gray-800 hover:text-blue-600">Fiches</a>
+
+            {% if not(is_granted('IS_AUTHENTICATED')) %}
+                <a href="{{ path('app_login') }}" class="text-gray-800 hover:text-blue-600">Login</a>
+            {% endif %}
+
+            {% if (is_granted('IS_AUTHENTICATED')) %}
+                <a href="{{ path('app_logout') }}" class="text-red-600 hover:text-red-800">Logout</a>
+            {% endif %}
+        </div>
+
+        <button class="md:hidden text-gray-800 focus:outline-none" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+    </div>
+
+    <div class="collapse navbar-collapse md:flex md:items-center md:justify-between" id="navbarNav">
+        <div class="space-x-6 md:flex md:items-center">
+            <a href="{{ path('app_afficher_fiches') }}" class="text-gray-800 hover:text-blue-600">Fiches</a>
+
+            {% if not(is_granted('IS_AUTHENTICATED')) %}
+                <a href="{{ path('app_login') }}" class="text-gray-800 hover:text-blue-600">Login</a>
+            {% endif %}
+
+            {% if (is_granted('IS_AUTHENTICATED')) %}
+                <a href="{{ path('app_logout') }}" class="text-red-600 hover:text-red-800">Logout</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+{% block body %}{% endblock %}
+</body>
+
+<script src="https://cdn.tailwindcss.com"></script>
 </html>

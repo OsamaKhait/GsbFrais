@@ -1,41 +1,60 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}FicheFrais index{% endblock %}
+{% block title %}FicheFrais Index{% endblock %}
 
 {% block body %}
-    <h1>FicheFrais index</h1>
+    <div class="container mx-auto my-8 p-6 bg-white rounded-lg shadow-lg">
+        <h1 class="text-3xl font-semibold text-gray-800 mb-6">FicheFrais Index</h1>
 
-    <table class="table">
-        <thead>
+        <table class="min-w-full border-collapse border border-gray-300 divide-y divide-gray-200 rounded-md overflow-hidden">
+            <thead class="bg-gray-50">
             <tr>
-                <th>Id</th>
-                <th>Mois</th>
-                <th>NbJustificatifs</th>
-                <th>MontantValid</th>
-                <th>DateModif</th>
-                <th>actions</th>
+                <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Id</th>
+                <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Mois</th>
+                <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">NbJustificatifs</th>
+                <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">MontantValid</th>
+                <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">DateModif</th>
+                <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Actions</th>
             </tr>
-        </thead>
-        <tbody>
-        {% for fiche_frai in fiche_frais %}
-            <tr>
-                <td>{{ fiche_frai.id }}</td>
-                <td>{{ fiche_frai.mois }}</td>
-                <td>{{ fiche_frai.nbJustificatifs }}</td>
-                <td>{{ fiche_frai.montantValid }}</td>
-                <td>{{ fiche_frai.dateModif ? fiche_frai.dateModif|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_fiche_frais_show', {'id': fiche_frai.id}) }}">show</a>
-                    <a href="{{ path('app_fiche_frais_edit', {'id': fiche_frai.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+            {% for fiche_frai in fiche_frais %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-2 text-sm text-gray-700">{{ fiche_frai.id }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700">{{ fiche_frai.mois }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700">{{ fiche_frai.nbJustificatifs }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700">{{ fiche_frai.montantValid }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700">{{ fiche_frai.dateModif ? fiche_frai.dateModif|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-700">
+                        <a
+                                href="{{ path('app_fiche_frais_show', {'id': fiche_frai.id}) }}"
+                                class="text-blue-500 hover:underline"
+                        >
+                            Show
+                        </a>
+                        <a
+                                href="{{ path('app_fiche_frais_edit', {'id': fiche_frai.id}) }}"
+                                class="text-green-500 hover:underline ml-4"
+                        >
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="px-4 py-2 text-center text-sm text-gray-500">No records found</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
-    <a href="{{ path('app_fiche_frais_new') }}">Create new</a>
+        <div class="mt-6">
+            <a
+                    href="{{ path('app_fiche_frais_new') }}"
+                    class="inline-block px-6 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300 transition duration-150"
+            >
+                Create New
+            </a>
+        </div>
+    </div>
 {% endblock %}

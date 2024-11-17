@@ -11,6 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 
 class RegistrationFormType extends AbstractType
 {
@@ -43,7 +44,14 @@ class RegistrationFormType extends AbstractType
                     ]),
                 ],
             ])
-        ;
+            ->add('Nom')
+            ->add('Prenom')
+            ->add('adresse')
+            ->add('cp')
+            ->add('ville')
+            ->add('dateEmbauche', DateTimeType::class, [
+                'data' => new \DateTime(), // Set the default value to the current date and time
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
