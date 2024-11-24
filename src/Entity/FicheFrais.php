@@ -192,26 +192,4 @@ class FicheFrais
     {
         return $this->ligneFraisHorsForfait;
     }
-
-    public function addLigneFraisHorsForfait(LigneFraisHorsForfait $ligneFraisHorsForfait): static
-    {
-        if (!$this->ligneFraisHorsForfait->contains($ligneFraisHorsForfait)) {
-            $this->ligneFraisHorsForfait->add($ligneFraisHorsForfait);
-            $ligneFraisHorsForfait->setFicheFrais($this);
-        }
-
-        return $this;
-    }
-
-    public function removeLigneFraisHorsForfait(LigneFraisHorsForfait $ligneFraisHorsForfait): static
-    {
-        if ($this->ligneFraisHorsForfait->removeElement($ligneFraisHorsForfait)) {
-            // set the owning side to null (unless already changed)
-            if ($ligneFraisHorsForfait->getFicheFrais() === $this) {
-                $ligneFraisHorsForfait->setFicheFrais(null);
-            }
-        }
-
-        return $this;
-    }
 }

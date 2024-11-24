@@ -50,23 +50,4 @@ class Etat
     {
         return $this->ficheFrais;
     }
-
-    public function addFicheFrai(FicheFrais $ficheFrai): static
-    {
-        if (!$this->ficheFrais->contains($ficheFrai)) {
-            $this->ficheFrais->add($ficheFrai);
-            $ficheFrai->setEtat($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFicheFrai(FicheFrais $ficheFrai): static
-    {
-        if ($this->ficheFrais->removeElement($ficheFrai)&&$ficheFrai->getEtat() === $this) {
-            // set the owning side to null (unless already changed)
-            $ficheFrai->setEtat(null);
-        }
-        return $this;
-    }
 }

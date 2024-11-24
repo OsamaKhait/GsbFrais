@@ -17,10 +17,16 @@
         </div>
 
         <div class="space-x-6 hidden md:flex">
+            {% if (is_granted('IS_AUTHENTICATED')) %}
             <a href="{{ path('app_afficher_fiches') }}" class="text-gray-800 hover:text-blue-600">Fiches</a>
+            {% endif %}
 
             {% if not(is_granted('IS_AUTHENTICATED')) %}
                 <a href="{{ path('app_login') }}" class="text-gray-800 hover:text-blue-600">Login</a>
+            {% endif %}
+
+            {% if not (is_granted('IS_AUTHENTICATED')) %}
+                <a href="{{ path('app_register') }}" class="text-gray-800 hover:text-blue-600">Register</a>
             {% endif %}
 
             {% if (is_granted('IS_AUTHENTICATED')) %}
