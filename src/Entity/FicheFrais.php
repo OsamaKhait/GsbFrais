@@ -48,33 +48,6 @@ class FicheFrais
         $this->ligneFraisHorsForfait = new ArrayCollection();
     }
 
-    public function getCumul(): float
-    {
-        $tot = 0;
-
-        foreach ($this->ligneFraisHorsForfait as $ligne) {
-            // Assuming that getMontant returns a float value
-            $tot += $ligne->getMontant();
-        }
-
-        return $tot;
-    }
-
-    public function cumulLigneForfait()
-    {
-        $tot = 0;
-
-        foreach ($this->ligneFraisForfait as $ligne) {
-            // Check if the FraisForfait object exists
-            if ($ligne->getFraisForfait() !== null) {
-                // Assuming that getMontant returns a float value
-                $tot += $ligne->getQuantite() * $ligne->getFraisForfait()->getMontant();
-            }
-        }
-
-        return $tot;
-    }
-
     public function getId(): ?int
     {
         return $this->id;
@@ -89,6 +62,7 @@ class FicheFrais
     {
         return \DateTimeImmutable::createFromFormat('Ym', $this->mois);
     }
+
     public function setMois(string $mois): static
     {
         $this->mois = $mois;
@@ -176,10 +150,9 @@ class FicheFrais
 
     public function removeLigneFraisForfait(LigneFraisForfait $ligneFraisForfait): static
     {
-        if ($this->ligneFraisForfait->removeElement($ligneFraisForfait) && $ligneFraisForfait->getFicheFrais()===$this)
-        {
+        if ($this->ligneFraisForfait->removeElement($ligneFraisForfait) && $ligneFraisForfait->getFicheFrais() === $this) {
             // set the owning side to null (unless already changed)
-                $ligneFraisForfait->setFicheFrais(null);
+            $ligneFraisForfait->setFicheFrais(null);
         }
 
         return $this;
@@ -191,5 +164,18 @@ class FicheFrais
     public function getLigneFraisHorsForfait(): Collection
     {
         return $this->ligneFraisHorsForfait;
+    }
+
+    public function TotalLigneForfait(): float|int
+    {
+        $tot = 0;
+
+        foreach ($this->ligneFraisForfait as $ligne) {
+            if ($ligne->getFraisForfait() !== null) {
+                $tot += $ligne->getQuantite() * $ligne->getFraisForfait()->getMontant();
+            }
+        }
+
+        return $tot;
     }
 }

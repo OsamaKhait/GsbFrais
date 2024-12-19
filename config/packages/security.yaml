@@ -37,7 +37,7 @@ security:
          - { path: ^/admin, roles: ROLE_ADMIN }
          - { path: ^/etat, roles: ROLE_USER }
          - { path: ^/profile, roles: ROLE_USER }
-         - { path: ^/comptable, roles: ROLE_COMPTABLE }
+         - { path: ^/comptable, roles: ROLE_USER }
 
 when@test:
     security:

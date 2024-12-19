@@ -28,10 +28,15 @@ class AfficherFichesController extends AbstractController
         $selectedFiche=null;
         $lignefraisforfait= null;
         if ($form->isSubmitted()&& $form->isValid()){
+            $totalKm = 0;
+            $totalEtape=0;
+            $totalNuite=0;
+            $totalRepas=0;
             /** @var FicheFrais $selectedFiche */
             $selectedFiche = $form->get('fichesFrais')->getData();
 
             $lignefraisforfait = $form->get('fichesFrais')->getData();
+            $totalLigneFraisForfait = $selectedFiche->TotalLigneForfait();
         }
 
 
