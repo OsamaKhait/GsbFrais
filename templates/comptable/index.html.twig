@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Top 3 des visiteurs{% endblock %}
+
+{% block body %}
+    <h1>Top 3 des visiteurs pour un mois</h1>
+
+    {{ form(form) }}
+
+    {% if topVisiteurs is not empty %}
+        <h2>Top 3 pour le mois sélectionné :</h2>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Montant Validé</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for visiteur in topVisiteurs %}
+                <tr>
+                    <td>{{ visiteur.nom }}</td>
+                    <td>{{ visiteur.prenom }}</td>
+                    <td>{{ visiteur.totalMontant|number_format(2, ',', ' ') }} €</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}
