@@ -18,6 +18,10 @@
 
         <div class="space-x-6 hidden md:flex">
             {% if (is_granted('IS_AUTHENTICATED')) %}
+            <a href="{{ path('app_saisir_fiche_frais') }}" class"text-gray-800 hover:text-blue-600">Saisir Fiche Frais</a>
+            {% endif %}
+
+            {% if (is_granted('IS_AUTHENTICATED')) %}
             <a href="{{ path('app_afficher_fiches') }}" class="text-gray-800 hover:text-blue-600">Fiches</a>
             {% endif %}
 

@@ -76,4 +76,16 @@ class FraisForfait
 
         return $this;
     }
+
+    public function removeLigneFraisForfait(LigneFraisForfait $ligneFraisForfait): static
+    {
+        if ($this->ligneFraisForfait->removeElement($ligneFraisForfait)) {
+            // set the owning side to null (unless already changed)
+            if ($ligneFraisForfait->getFraisForfait() === $this) {
+                $ligneFraisForfait->setFraisForfait(null);
+            }
+        }
+
+        return $this;
+    }
 }
