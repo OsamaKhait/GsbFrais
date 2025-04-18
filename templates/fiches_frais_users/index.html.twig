@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la fiche de frais{% endblock %}
+
+{% block body %}
+    <div class="container-fluid px-4 py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                {% if ficheDate %}
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h2 class="mb-0">
+                                <i class="bi bi-file-earmark-text me-2"></i> Fiche de {{ ficheDate.getUser().getPrenom() }} {{ ficheDate.getUser().getNom() }}
+                            </h2>
+                            <span class="badge {{ ficheDate.getEtat().getLibelle()|etatBadgeClass }}">
+                                {{ ficheDate.getEtat().getLibelle() }}
+                            </span>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h4 class="text-primary mb-3">
+                                        <i class="bi bi-info-circle me-2"></i> Informations Générales
+                                    </h4>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th>Nom</th>
+                                            <td>{{ ficheDate.getUser().getNom() }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Mois</th>
+                                            <td>{{ ficheDate.getMois()|date('F Y') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Nombre de Justificatifs</th>
+                                            <td><span class="badge bg-info">{{ ficheDate.getNbJustificatifs() }}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date de Modification</th>
+                                            <td>{{ ficheDate.getDateModif()|date('d/m/Y H:i') }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <h4 class="text-primary mb-3">
+                                        <i class="bi bi-cash-coin me-2"></i> Détails Financiers
+                                    </h4>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th>Montant Validé</th>
+                                            <td class="fw-bold text-success">{{ ficheDate.montantTotalForfait()|number_format(2, ',', ' ') }} €</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <h4 class="text-primary mb-3">
+                                    <i class="bi bi-grid-3x3-gap me-2"></i> Éléments Forfaitisés
+                                </h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th>Frais Kilométrique</th>
+                                            <th>Étape</th>
+                                            <th>Nuitée Hôtel</th>
+                                            <th>Repas Restaurant</th>
+                                            <th>Total Forfait</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>{{ totalKm }} €</td>
+                                            <td>{{ totalEtape }} €</td>
+                                            <td>{{ totalNuit }} €</td>
+                                            <td>{{ totalRepas }} €</td>
+                                            <td class="fw-bold text-success">{{ ficheDate.montantTotalForfait()|number_format(2, ',', ' ') }} €</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <h4 class="text-primary mb-3">
+                                    <i class="bi bi-receipt me-2"></i> Éléments Hors Forfait
+                                </h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th>Libellé</th>
+                                            <th>Montant</th>
+                                            <th>Date</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for fraisHorsForfait in ficheDate.ligneFraisHorsForfaits() %}
+                                            <tr>
+                                                <td>{{ fraisHorsForfait.getLibelle() }}</td>
+                                                <td class="text-success">{{ fraisHorsForfait.getMontant()|number_format(2, ',', ' ') }} €</td>
+                                                <td>{{ fraisHorsForfait.getDate()|date('d/m/Y') }}</td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">Aucun élément hors forfait</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 d-flex justify-content-end">
+                                {{ form_start(formEtat) }}
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="bi bi-check-circle me-2"></i> Mettre à jour l'état
+                                </button>
+                                {{ form_end(formEtat) }}
+                            </div>
+                        </div>
+
+                        <div class="card-footer text-muted">
+                            <small><i class="bi bi-clock me-2"></i> Dernière mise à jour : {{ ficheDate.getDateModif()|date('d/m/Y H:i') }}</small>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i> Aucune fiche de frais trouvée
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body { background-color: #f4f6f9; }
+        .table-borderless th { color: #6c757d; }
+    </style>
+{% endblock %}
