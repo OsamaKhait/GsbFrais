@@ -16,13 +16,20 @@ class AfficheFicheFraisType extends AbstractType
             ->add('fichesFrais', ChoiceType::class, [
                 'choices' => $options['data'] ?? [], // Handle empty data
                 'choice_label' => function ($choice): string {
-                    $aString = $choice->getMois();
-                    // Ensure we handle both formats, the expected date and the fallback
-                    if (strlen($aString) >= 4) {
-                        $laDate = str_split($aString, 4);
+                    $mois = $choice->getMois();
+
+                    // Check if $mois is a DateTimeImmutable and format it accordingly
+                    if ($mois instanceof \DateTimeImmutable) {
+                        return $mois->format('m/Y'); // Format to MM/YYYY
+                    }
+
+                    // Handle legacy string-based month representation
+                    if (is_string($mois) && strlen($mois) >= 4) {
+                        $laDate = str_split($mois, 4);
                         return $laDate[0] . '/' . $laDate[1]; // Format it as MM/YYYY
                     }
-                    return $aString; // Fallback for unexpected formats
+
+                    return (string)$mois; // Fallback for unexpected cases
                 },
                 'placeholder' => 'Sélectionner un mois', // Add a placeholder option
                 'required' => true,

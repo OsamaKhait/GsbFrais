@@ -31,6 +31,18 @@ class FicheFraisRepository extends ServiceEntityRepository
             ;
     }
 
+    public function getTop3MontantsValides($mois): array
+    {
+        return $this->createQueryBuilder('ff')
+            ->andWhere('ff.mois = :mois')
+            ->setParameter('mois', $mois)
+            ->orderBy('ff.montantValid', 'DESC')
+            ->setMaxResults(3)
+            ->getQuery()
+            ->getResult();
+    }
+
+
 //    /**
 //     * @return FicheFrais[] Returns an array of FicheFrais objects
 //     */

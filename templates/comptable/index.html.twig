@@ -1,31 +1,102 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Top 3 des visiteurs{% endblock %}
+{% block title %}Galaxy Swiss Bourdin | Comptabilité{% endblock %}
 
 {% block body %}
-    <h1>Top 3 des visiteurs pour un mois</h1>
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold">
+                <i class="bi bi-person-circle text-primary"></i> Bonjour {{ app.user.prenom }} {{ app.user.nom }}
+            </h1>
+            <p class="lead text-muted">Gestion des fiches de frais</p>
+        </div>
 
-    {{ form(form) }}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-filter-circle me-2"></i> Sélection de l'utilisateur
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'class': 'row g-3'}}) }}
+                <div class="col-md-10">
+                    {{ form_widget(form, {'attr': {'class': 'form-select'}}) }}
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-light w-100">
+                        <i class="bi bi-search me-2"></i> Valider
+                    </button>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
 
-    {% if topVisiteurs is not empty %}
-        <h2>Top 3 pour le mois sélectionné :</h2>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Montant Validé</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for visiteur in topVisiteurs %}
-                <tr>
-                    <td>{{ visiteur.nom }}</td>
-                    <td>{{ visiteur.prenom }}</td>
-                    <td>{{ visiteur.totalMontant|number_format(2, ',', ' ') }} €</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+        {% if selectedFiche is not null %}
+            {% if selectedFiche|length > 0 %}
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i> Fiches de frais</h5>
+                        <span class="badge bg-light text-dark rounded-pill">Total : {{ selectedFiche|length }} fiche(s)</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle">
+                            <thead class="table-light">
+                            <tr class="text-center">
+                                <th>Mois</th>
+                                <th>État</th>
+                                <th>Justificatifs</th>
+                                <th>Montant total</th>
+                                <th>Dernière modification</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for ficheFrais in selectedFiche %}
+                                <tr>
+                                    <td>{{ ficheFrais.mois ? ficheFrais.mois|date('F Y') : 'Non spécifié' }}</td>
+                                    <td>
+                                    <span class="badge
+                                        {% if ficheFrais.etat.libelle == 'Validé' %} bg-success
+                                        {% elseif ficheFrais.etat.libelle == 'En cours' %} bg-warning text-dark
+                                        {% elseif ficheFrais.etat.libelle == 'Refusé' %} bg-danger
+                                        {% else %} bg-secondary
+                                        {% endif %}">
+                                        {{ ficheFrais.etat.libelle }}
+                                    </span>
+                                    </td>
+                                    <td>{{ ficheFrais.nbJustificatifs ?? 0 }}</td>
+                                    <td>{{ ficheFrais.calculateTotalAmount()|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ ficheFrais.dateModif ? ficheFrais.dateModif|date('d/m/Y H:i') : 'Non renseignée' }}</td>
+                                    <td>
+                                        <a href="{{ path('app_fiches_frais_users', {'id': ficheFrais.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i> Détails
+                                        </a>
+                                        {% if ficheFrais.etat.libelle == 'En cours' %}
+                                            <button class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-check-circle me-1"></i> Valider
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+                    <span class="text-dark">
+                        <i class="bi bi-calculator me-2 text-primary"></i>
+                        Montant total des fiches : <strong>{{ selectedFiche|reduce((total, ficheFrais) => total + ficheFrais.calculateTotalAmount(), 0)|number_format(2, ',', ' ') }} €</strong>
+                    </span>
+                        <small class="text-muted"><i class="bi bi-clock me-1"></i> Dernière mise à jour : {{ "now"|date('d/m/Y H:i') }}</small>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center mt-4">
+                    <i class="bi bi-info-circle fs-4"></i> Aucune fiche de frais trouvée pour cet utilisateur.
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
 {% endblock %}

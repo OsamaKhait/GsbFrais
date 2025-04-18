@@ -11,15 +11,21 @@ use Symfony\Component\Routing\Annotation\Route;
 class SupprimFHFController extends AbstractController
 {
     #[Route('/delete/fiche/hors/forfait/{id}', name: 'app_delete_fiche_hors_forfait')]
-    public function index($id, EntityManagerInterface $entityManager): Response
+    public function index(LigneFraisHorsForfait $ficheHorsForfait, EntityManagerInterface $entityManager): Response
     {
-        $ficheHorForfait = $entityManager->getRepository(LigneFraisHorsForfait::class)->find($id);
-
-        if($ficheHorForfait != null){
-            $entityManager->remove($ficheHorForfait);
+        // Use type-hinting to automatically handle 404 if the entity doesn't exist
+        try {
+            $entityManager->remove($ficheHorsForfait);
             $entityManager->flush();
+
+            // Add a flash message for user feedback
+            $this->addFlash('success', 'La ligne de frais hors forfait a été supprimée avec succès.');
+        } catch (\Exception $e) {
+            // Add an error flash message if something goes wrong
+            $this->addFlash('error', 'Une erreur est survenue lors de la suppression de la ligne de frais.');
         }
-        return $this->render('supprim_fhf/index.html.twig', [
-        ]);
+
+        // Redirect back to the expense entry page
+        return $this->redirectToRoute('app_saisir_fiche_frais');
     }
 }

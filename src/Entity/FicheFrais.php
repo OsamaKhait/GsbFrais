@@ -16,8 +16,8 @@ class FicheFrais
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $mois = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private ?\DateTimeImmutable $mois = null;  // Use DateTimeImmutable
 
     #[ORM\Column]
     private ?int $nbJustificatifs = null;
@@ -42,6 +42,7 @@ class FicheFrais
     #[ORM\OneToMany(mappedBy: 'ficheFrais', targetEntity: LigneFraisHorsForfait::class, orphanRemoval: true, cascade: ["persist"])]
     private Collection $ligneFraisHorsForfait;
 
+
     public function __construct()
     {
         $this->ligneFraisForfait = new ArrayCollection();
@@ -53,17 +54,12 @@ class FicheFrais
         return $this->id;
     }
 
-    public function getMois(): ?string
+    public function getMois(): ?\DateTimeImmutable
     {
         return $this->mois;
     }
 
-    public function getMoisFormatted(): ?\DateTimeImmutable
-    {
-        return \DateTimeImmutable::createFromFormat('Ym', $this->mois);
-    }
-
-    public function setMois(string $mois): static
+    public function setMois(\DateTimeImmutable $mois): static
     {
         $this->mois = $mois;
 
@@ -177,5 +173,24 @@ class FicheFrais
         }
 
         return $tot;
+    }
+
+    public function calculateTotalAmount(): float
+    {
+        $totalForfait = $this->TotalLigneForfait();
+
+        $totalHorsForfait = 0;
+        foreach ($this->ligneFraisHorsForfait as $ligne) {
+            // Assuming you want to sum all hors forfait items
+            // You might want to add logic to exclude rejected items
+            $totalHorsForfait += $ligne->getMontant() ?? 0;
+        }
+
+        return $totalForfait + $totalHorsForfait;
+    }
+
+    public function getLigneFraisForfaits(): Collection
+    {
+        return $this->ligneFraisForfait;
     }
 }

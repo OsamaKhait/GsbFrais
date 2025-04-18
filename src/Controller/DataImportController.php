@@ -9,6 +9,7 @@ use App\Entity\LigneFraisForfait;
 use App\Entity\LigneFraisHorsForfait;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -51,16 +52,13 @@ class DataImportController extends AbstractController
             $user->setDateEmbauche($dateEmbauche);
             $entityManager->persist($user);
             $entityManager->flush();
-
         }
-
-
 
         return $this->render('data_import/index.html.twig', [
             'controller_name' => 'DataImportController',
         ]);
-
     }
+
     #[Route('/fiche', name: 'app_data_import_fiche')]
     public function fiche(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
     {
@@ -91,12 +89,24 @@ class DataImportController extends AbstractController
                         $etat = $entityManager->getRepository(Etat::class)->find(4);
                         break;
                     default:
-                        error();
-                        break;
+                        // Log l'erreur
+                        error_log("Valeur inattendue pour idEtat: " . $ficheData['idEtat']);
+                        continue; // Ignorer cet enregistrement
+                }
+
+                // Vérifier si l'état a été trouvé
+                if (!$etat) {
+                    error_log("État non trouvé pour idEtat: " . $ficheData['idEtat']);
+                    continue; // Ignorer cet enregistrement
                 }
 
                 $fiche->setEtat($etat);
-                $fiche->setMois($ficheData['mois']);
+
+                // Extraction et conversion de la date
+                $date = DateTime::createFromFormat('Ym', $ficheData['mois']);
+                $date -> modify('first day of this month');
+                $fiche->setMois($date);
+
                 $dateModif = new \DateTime($ficheData['dateModif']);
                 $fiche->setDateModif($dateModif);
                 $fiche->setMontantValid($ficheData['montantValide']);
@@ -111,7 +121,6 @@ class DataImportController extends AbstractController
         return $this->render('data_import/index.html.twig', [
             'controller_name' => 'DataImportController',
         ]);
-
     }
 
     #[Route('/ligne/hors/forfait', name: 'app_data_import_lignes_hors')]
@@ -121,27 +130,35 @@ class DataImportController extends AbstractController
         $lignesHorsForfaitjson = file_get_contents('./lignefraishorsforfait.json');
         $lignesHors = json_decode($lignesHorsForfaitjson, true);
 
-
         foreach ($lignesHors as $ligneHorsData) {
-            $ligneHors = new LigneFraisHorsForfait();
             $user = $entityManager->getRepository(User::class)->findOneBy(['oldId' => $ligneHorsData['idVisiteur']]);
+            if (!$user) {
+                error_log("Utilisateur non trouvé pour oldId: " . $ligneHorsData['idVisiteur']);
+                continue;
+            }
 
+            // Conversion de la date du mois pour la recherche
+            $mois = $ligneHorsData['mois'];
+            $year = (int)substr($mois, 0, 4);
+            $month = (int)substr($mois, 4, 2);
+            $dateString = sprintf('%04d-%02d-%02d', $year, $month, 1);
+            $dateMois = new \DateTimeImmutable($dateString);
 
-            $fiche2= $entityManager->getRepository(FicheFrais::class)->findOneBy([
+            $fiche = $entityManager->getRepository(FicheFrais::class)->findOneBy([
                 'user' => $user,
-                'mois' => $ligneHorsData['mois'],
+                'mois' => $dateMois,
             ]);
 
-            if ($ligneHors) {
+            if ($fiche) {
                 $ligneHorsForfait = new LigneFraisHorsForfait();
-                $ligneHorsForfait->setFicheFrais($fiche2);
+                $ligneHorsForfait->setFicheFrais($fiche);
                 $ligneHorsForfait->setLibelle($ligneHorsData['libelle']);
                 $date = new \DateTime($ligneHorsData['date']);
                 $ligneHorsForfait->setDate($date);
                 $ligneHorsForfait->setMontant($ligneHorsData['montant']);
                 $entityManager->persist($ligneHorsForfait);
             } else {
-                // Handle the case where no matching entity is found for the criteria.
+                error_log("Fiche non trouvée pour utilisateur: " . $user->getId() . " et mois: " . $dateString);
             }
         }
 
@@ -159,38 +176,58 @@ class DataImportController extends AbstractController
         $lignesForfaitjson = file_get_contents('./lignefraisforfait.json');
         $lignes = json_decode($lignesForfaitjson, true);
 
-
         foreach ($lignes as $ligneData) {
-            $ligneForfait = new LigneFraisForfait();
             $user = $entityManager->getRepository(User::class)->findOneBy(['oldId' => $ligneData['idVisiteur']]);
-            $fiche2 = $entityManager->getRepository(FicheFrais::class)->findOneBy([
+            if (!$user) {
+                error_log("Utilisateur non trouvé pour oldId: " . $ligneData['idVisiteur']);
+                continue;
+            }
+
+            // Conversion de la date du mois pour la recherche
+            $mois = $ligneData['mois'];
+            $year = (int)substr($mois, 0, 4);
+            $month = (int)substr($mois, 4, 2);
+            $dateString = sprintf('%04d-%02d-%02d', $year, $month, 1);
+            $dateMois = new \DateTimeImmutable($dateString);
+
+            $fiche = $entityManager->getRepository(FicheFrais::class)->findOneBy([
                 'user' => $user,
-                'mois' => $ligneData['mois'],
+                'mois' => $dateMois,
             ]);
 
+            if ($fiche) {
+                $ligneForfait = new LigneFraisForfait();
+                $ligneForfait->setQuantite($ligneData['quantite']);
+                $ligneForfait->setFicheFrais($fiche);
 
-            $ligneForfait->setQuantite($ligneData['quantite']);
-            $ligneForfait->setFicheFrais($fiche2);
+                switch($ligneData['idFraisForfait']){
+                    case "ETP":
+                        $ff = $entityManager->getRepository(FraisForfait::class)->find(1);
+                        break;
+                    case "KM":
+                        $ff = $entityManager->getRepository(FraisForfait::class)->find(2);
+                        break;
+                    case "NUI":
+                        $ff = $entityManager->getRepository(FraisForfait::class)->find(3);
+                        break;
+                    case "REP":
+                        $ff = $entityManager->getRepository(FraisForfait::class)->find(4);
+                        break;
+                    default:
+                        error_log("Type de frais forfait inconnu: " . $ligneData['idFraisForfait']);
+                        continue;
+                }
 
-            switch($ligneData['idFraisForfait']){
-                case "ETP":
-                    $ff= $entityManager->getRepository(FraisForfait::class)->find(1);
-                    break;
-                case "KM":
-                    $ff= $entityManager->getRepository(FraisForfait::class)->find(2);
-                    break;
-                case "NUI":
-                    $ff= $entityManager->getRepository(FraisForfait::class)->find(3);
-                    break;
-                case "REP":
-                    $ff= $entityManager->getRepository(FraisForfait::class)->find(4);
-                    break;
-                default:
-                    error();
-                    break;
+                if (!$ff) {
+                    error_log("FraisForfait non trouvé pour id: " . $ligneData['idFraisForfait']);
+                    continue;
+                }
+
+                $ligneForfait->setFraisForfait($ff);
+                $entityManager->persist($ligneForfait);
+            } else {
+                error_log("Fiche non trouvée pour utilisateur: " . $user->getId() . " et mois: " . $dateString);
             }
-            $ligneForfait->setFraisForfait($ff);
-            $entityManager->persist($ligneForfait);
         }
 
         $entityManager->flush();

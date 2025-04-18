@@ -13,6 +13,7 @@ use App\Form\LigneFraisHorsForfaitType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Monolog\DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,15 +28,16 @@ class SaisirFicheFraisController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         $user = $this->getUser();
-        $ficheFrais = $entityManager->getRepository(FicheFrais::class)->findOneBy(['user' => $user, 'mois' => date('Ym')]);
-
-        $dateNow = date('Ym');
+        $mois = new \DateTime('now');
+        $mois -> modify('first day of this month');
+        $mois = \DateTimeImmutable::createFromMutable($mois);
+        $ficheFrais = $entityManager->getRepository(FicheFrais::class)->findOneBy(['user' => $user, 'mois' => $mois]);
 
         if ($ficheFrais == null) {
 
             $ficheFrais = new FicheFrais();
 
-            $ficheFrais->setMois($dateNow);
+            $ficheFrais->setMois($mois);
             $ficheFrais->setUser($user);
             $ficheFrais->setDateModif(new \DateTime('now'));
             $ficheFrais->setNbJustificatifs(0);
