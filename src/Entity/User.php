@@ -10,10 +10,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFactorInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -26,9 +27,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
     private ?string $password = null;
 
@@ -56,7 +54,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $oldId = null;
 
+    // 2FA properties
+    #[ORM\Column(type: 'boolean')]
+    private bool $isTotpAuthenticationEnabled = false;
 
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $totpSecret = null;
 
     public function __construct()
     {
@@ -80,23 +83,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
@@ -109,9 +103,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): string
     {
         return $this->password;
@@ -124,13 +115,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function eraseCredentials(): void
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        // Clear sensitive data if needed
     }
 
     public function getPrenom(): ?string
@@ -205,9 +192,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, FicheFrais>
-     */
     public function getFicheFrais(): Collection
     {
         return $this->ficheFrais;
@@ -226,7 +210,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeFicheFrai(FicheFrais $ficheFrai): static
     {
         if ($this->ficheFrais->removeElement($ficheFrai)) {
-            // set the owning side to null (unless already changed)
             if ($ficheFrai->getUser() === $this) {
                 $ficheFrai->setUser(null);
             }
@@ -257,4 +240,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return null;
     }
 
+    // 2FA methods
+
+    public function isTotpAuthenticationEnabled(): bool
+    {
+        return $this->isTotpAuthenticationEnabled;
+    }
+
+    public function getTotpSecret(): ?string
+    {
+        return $this->totpSecret;
+    }
+
+    public function setTotpSecret(?string $totpSecret): static
+    {
+        $this->totpSecret = $totpSecret;
+        return $this;
+    }
+
+    public function enableTotpAuthentication(): void
+    {
+        $this->isTotpAuthenticationEnabled = true;
+    }
+
+    public function disableTotpAuthentication(): void
+    {
+        $this->isTotpAuthenticationEnabled = false;
+    }
+
+    // Obligations de l'interface TwoFactorInterface (Google Authenticator)
+
+    public function isGoogleAuthenticatorEnabled(): bool
+    {
+        return $this->isTotpAuthenticationEnabled;
+    }
+
+    public function getGoogleAuthenticatorUsername(): string
+    {
+        return $this->email ?? '';
+    }
+
+    public function getGoogleAuthenticatorSecret(): ?string
+    {
+        return $this->totpSecret;
+    }
 }

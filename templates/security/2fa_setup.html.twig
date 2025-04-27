@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Configurer votre 2FA{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Configurer l'authentification à deux facteurs</h1>
+
+        <p>Scannez ce QR code avec votre application d'authentification (ex : Google Authenticator) :</p>
+
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ qrCodeUrl|url_encode }}" alt="QR Code">
+
+        <p>Une fois configuré, vous pourrez utiliser votre application pour générer des codes d'authentification !</p>
+
+        <a href="{{ path('app_login') }}" class="btn btn-success mt-3">Retour à la connexion</a>
+    </div>
+{% endblock %}

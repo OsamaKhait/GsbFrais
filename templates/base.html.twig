@@ -20,6 +20,11 @@
             {% if (is_granted('IS_AUTHENTICATED')) %}
             <a href="{{ path('app_comptable') }}" class="text-gray-800 hover:text-blue-600">Comptable</a>
             {% endif %}
+            {% if app.user and not app.user.isTotpAuthenticationEnabled() %}
+                <a href="{{ path('2fa_setup') }}" class="btn btn-warning">
+                    🔒 Activer la double authentification
+                </a>
+            {% endif %}
             {% if (is_granted('IS_AUTHENTICATED')) %}
             <a href="{{ path('app_saisir_fiche_frais') }}" class="text-gray-800 hover:text-blue-600">Saisir Fiche Frais</a>
             {% endif %}

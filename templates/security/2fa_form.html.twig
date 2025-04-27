@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Authentification 2FA{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Authentification à deux facteurs</h1>
+
+        <p>Veuillez saisir le code généré par votre application d'authentification :</p>
+
+        <form action="{{ path('2fa_login_check') }}" method="POST">
+            <div class="form-group">
+                <label for="auth_code">Code d'authentification :</label>
+                <input type="text" id="auth_code" name="_auth_code" required autofocus class="form-control">
+            </div>
+
+            <br>
+
+            <button type="submit" class="btn btn-primary">Valider</button>
+        </form>
+    </div>
+{% endblock %}
