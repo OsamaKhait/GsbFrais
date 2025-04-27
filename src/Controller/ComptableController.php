@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ComptableController extends AbstractController
 {
     #[Route('/comptable', name: 'app_comptable')]
+
     public function index(ManagerRegistry $doctrine, Request $request): Response
     {
         $users = $doctrine->getRepository(User::class)->findAll();

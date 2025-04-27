@@ -17,13 +17,10 @@ class FicheFrais
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
-    private ?\DateTimeImmutable $mois = null;  // Use DateTimeImmutable
+    private ?\DateTimeImmutable $mois = null;
 
     #[ORM\Column]
     private ?int $nbJustificatifs = null;
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 6, scale: 2)]
-    private ?string $montantValid = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateModif = null;
@@ -32,21 +29,23 @@ class FicheFrais
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
+    #[ORM\OneToMany(mappedBy: 'ficheFrais', targetEntity: LigneFraisHorsForfait::class, orphanRemoval: true, cascade: ["persist"])]
+    private Collection $ligneFraisHorsForfaits;
+
     #[ORM\ManyToOne(inversedBy: 'ficheFrais')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Etat $etat = null;
 
-    #[ORM\OneToMany(mappedBy: 'ficheFrais', targetEntity: LigneFraisForfait::class, orphanRemoval: true)]
-    private Collection $ligneFraisForfait;
+    #[ORM\OneToMany(mappedBy: 'ficheFrais', targetEntity: LigneFraisForfait::class, orphanRemoval: true, cascade: ["persist"])]
+    private Collection $ligneFraisForfaits;
 
-    #[ORM\OneToMany(mappedBy: 'ficheFrais', targetEntity: LigneFraisHorsForfait::class, orphanRemoval: true, cascade: ["persist"])]
-    private Collection $ligneFraisHorsForfait;
-
+    #[ORM\Column]
+    private ?float $montantValid = null;
 
     public function __construct()
     {
-        $this->ligneFraisForfait = new ArrayCollection();
-        $this->ligneFraisHorsForfait = new ArrayCollection();
+        $this->ligneFraisHorsForfaits = new ArrayCollection();
+        $this->ligneFraisForfaits = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -62,7 +61,6 @@ class FicheFrais
     public function setMois(\DateTimeImmutable $mois): static
     {
         $this->mois = $mois;
-
         return $this;
     }
 
@@ -74,19 +72,6 @@ class FicheFrais
     public function setNbJustificatifs(int $nbJustificatifs): static
     {
         $this->nbJustificatifs = $nbJustificatifs;
-
-        return $this;
-    }
-
-    public function getMontantValid(): ?string
-    {
-        return $this->montantValid;
-    }
-
-    public function setMontantValid(string $montantValid): static
-    {
-        $this->montantValid = $montantValid;
-
         return $this;
     }
 
@@ -98,7 +83,6 @@ class FicheFrais
     public function setDateModif(\DateTimeInterface $dateModif): static
     {
         $this->dateModif = $dateModif;
-
         return $this;
     }
 
@@ -110,6 +94,34 @@ class FicheFrais
     public function setUser(?User $user): static
     {
         $this->user = $user;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LigneFraisHorsForfait>
+     */
+    public function getLigneFraisHorsForfaits(): Collection
+    {
+        return $this->ligneFraisHorsForfaits;
+    }
+
+    public function addLigneFraisHorsForfait(LigneFraisHorsForfait $ligneFraisHorsForfait): static
+    {
+        if (!$this->ligneFraisHorsForfaits->contains($ligneFraisHorsForfait)) {
+            $this->ligneFraisHorsForfaits->add($ligneFraisHorsForfait);
+            $ligneFraisHorsForfait->setFicheFrais($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLigneFraisHorsForfait(LigneFraisHorsForfait $ligneFraisHorsForfait): static
+    {
+        if ($this->ligneFraisHorsForfaits->removeElement($ligneFraisHorsForfait)) {
+            if ($ligneFraisHorsForfait->getFicheFrais() === $this) {
+                $ligneFraisHorsForfait->setFicheFrais(null);
+            }
+        }
 
         return $this;
     }
@@ -122,22 +134,21 @@ class FicheFrais
     public function setEtat(?Etat $etat): static
     {
         $this->etat = $etat;
-
         return $this;
     }
 
     /**
      * @return Collection<int, LigneFraisForfait>
      */
-    public function getLigneFraisForfait(): Collection
+    public function getLigneFraisForfaits(): Collection
     {
-        return $this->ligneFraisForfait;
+        return $this->ligneFraisForfaits;
     }
 
     public function addLigneFraisForfait(LigneFraisForfait $ligneFraisForfait): static
     {
-        if (!$this->ligneFraisForfait->contains($ligneFraisForfait)) {
-            $this->ligneFraisForfait->add($ligneFraisForfait);
+        if (!$this->ligneFraisForfaits->contains($ligneFraisForfait)) {
+            $this->ligneFraisForfaits->add($ligneFraisForfait);
             $ligneFraisForfait->setFicheFrais($this);
         }
 
@@ -146,51 +157,67 @@ class FicheFrais
 
     public function removeLigneFraisForfait(LigneFraisForfait $ligneFraisForfait): static
     {
-        if ($this->ligneFraisForfait->removeElement($ligneFraisForfait) && $ligneFraisForfait->getFicheFrais() === $this) {
-            // set the owning side to null (unless already changed)
-            $ligneFraisForfait->setFicheFrais(null);
+        if ($this->ligneFraisForfaits->removeElement($ligneFraisForfait)) {
+            if ($ligneFraisForfait->getFicheFrais() === $this) {
+                $ligneFraisForfait->setFicheFrais(null);
+            }
         }
 
         return $this;
     }
 
-    /**
-     * @return Collection<int, LigneFraisHorsForfait>
-     */
-    public function getLigneFraisHorsForfait(): Collection
+    public function getMontantValid(): float
     {
-        return $this->ligneFraisHorsForfait;
+        return (float) $this->montantValid;
     }
 
-    public function TotalLigneForfait(): float|int
+    public function setMontantValid(string $montantValid): static
     {
-        $tot = 0;
+        $this->montantValid = $montantValid;
+        return $this;
+    }
 
-        foreach ($this->ligneFraisForfait as $ligne) {
-            if ($ligne->getFraisForfait() !== null) {
-                $tot += $ligne->getQuantite() * $ligne->getFraisForfait()->getMontant();
-            }
+    public function getMontantTotalForfait(): float
+    {
+        $montantTotalForfait = 0.0;
+
+        foreach ($this->ligneFraisForfaits as $ligneFraisForfait) {
+            $montantTotalForfait += $ligneFraisForfait->getQuantite() * $ligneFraisForfait->getFraisForfait()->getMontant();
         }
 
-        return $tot;
+        return $montantTotalForfait;
+    }
+
+    public function getMontantTotalHorsForfait(): float
+    {
+        $montantTotalHorsForfait = 0.0;
+
+        foreach ($this->ligneFraisHorsForfaits as $ligneFraisHorsForfait) {
+            $montantTotalHorsForfait += $ligneFraisHorsForfait->getMontant();
+        }
+
+        return $montantTotalHorsForfait;
+    }
+
+    public function getMontantTotal(): float
+    {
+        return $this->getMontantTotalForfait() + $this->getMontantTotalHorsForfait();
     }
 
     public function calculateTotalAmount(): float
     {
-        $totalForfait = $this->TotalLigneForfait();
-
-        $totalHorsForfait = 0;
-        foreach ($this->ligneFraisHorsForfait as $ligne) {
-            // Assuming you want to sum all hors forfait items
-            // You might want to add logic to exclude rejected items
-            $totalHorsForfait += $ligne->getMontant() ?? 0;
-        }
-
-        return $totalForfait + $totalHorsForfait;
+        return $this->getMontantTotalForfait() + $this->getMontantValid();
     }
 
-    public function getLigneFraisForfaits(): Collection
+    public function getLigneFraisForfait(): Collection
     {
-        return $this->ligneFraisForfait;
+        return $this->ligneFraisForfaits;
     }
+
+    public function TotalLigneForfait(): float
+    {
+        return $this->getMontantTotalForfait();
+    }
+
+
 }

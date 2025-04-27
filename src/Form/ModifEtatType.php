@@ -9,7 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class ModifEtatFicheType extends AbstractType
+class ModifEtatType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -20,9 +20,6 @@ class ModifEtatFicheType extends AbstractType
                     return $etat->getLibelle();
                 },
                 'attr' => ['class' => 'form-control dropdown-toggle']
-            ])
-            ->add('Changer', SubmitType::class, [
-                'attr' => ['class' => 'btn btn-primary mt-2 mx-auto d-block']
             ]);
     }
 

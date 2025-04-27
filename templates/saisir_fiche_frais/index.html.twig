@@ -3,128 +3,76 @@
 {% block title %}Saisir Fiche Frais{% endblock %}
 
 {% block body %}
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-600 to-pink-600 mb-10 text-center tracking-tight">
-            Saisir Fiche Frais
-        </h1>
+    <div class="container mx-auto px-4 py-12 bg-gray-50">
+        <h1 class="text-center text-3xl font-bold text-gray-800 mb-10">Saisie de la fiche de frais</h1>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14">
-            <!-- Form for Frais Forfait -->
-            <div class="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl shadow-2xl transition-all duration-300 ease-in-out hover:shadow-3xl transform hover:scale-[1.02]">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Frais Forfait</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <!-- Formulaire Frais Forfait -->
+            <div class="bg-transparent shadow-md rounded-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">Frais Forfait</h2>
                 {% if formFraisForfait %}
-                    {{ form_start(formFraisForfait, {
-                        attr: {
-                            class: 'space-y-6',
-                            'data-form-type': 'forfait'
-                        }
-                    }) }}
-                    <div class="space-y-6">
+                    {{ form_start(formFraisForfait) }}
+                    <div class="space-y-5">
                         {% for child in formFraisForfait %}
                             {% if child.vars.name not in ['_token'] %}
-                                <div class="form-group">
-                                    {{ form_label(child, null, {
-                                        'label_attr': {
-                                            class: 'text-base font-semibold text-gray-700 mb-2 block'
-                                        }
-                                    }) }}
-                                    {{ form_widget(child, {
-                                        attr: {
-                                            class: 'w-full border-2 border-gray-300 rounded-lg p-3 shadow-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ease-in-out'
-                                        }
-                                    }) }}
+                                <div>
+                                    {{ form_label(child, null, {'label_attr': {'class': 'font-medium text-gray-700'}}) }}
+                                    {{ form_widget(child, {'attr': {'class': 'w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'}}) }}
                                     {{ form_errors(child) }}
                                 </div>
                             {% endif %}
                         {% endfor %}
-                        <button type="submit" class="w-full btn btn-primary bg-gradient-to-r from-blue-700 to-blue-600 text-white py-3 px-6 rounded-2xl hover:from-blue-800 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all transform hover:scale-105">
-                            Soumettre Frais Forfait
-                        </button>
                     </div>
+                    <button type="submit" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200">Soumettre</button>
                     {{ form_end(formFraisForfait) }}
                 {% endif %}
             </div>
 
-            <!-- Form for Hors Forfait -->
-            <div class="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl shadow-2xl transition-all duration-300 ease-in-out hover:shadow-3xl transform hover:scale-[1.02]">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Frais Hors Forfait</h2>
+            <!-- Formulaire Hors Forfait -->
+            <div class="bg-transparent shadow-md rounded-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">Frais Hors Forfait</h2>
                 {% if formHorsForfait %}
-                    {{ form_start(formHorsForfait, {
-                        attr: {
-                            class: 'space-y-6',
-                            'data-form-type': 'hors-forfait'
-                        }
-                    }) }}
-                    <div class="space-y-6">
+                    {{ form_start(formHorsForfait) }}
+                    <div class="space-y-5">
                         {% for child in formHorsForfait %}
                             {% if child.vars.name not in ['_token'] %}
-                                <div class="form-group">
-                                    {{ form_label(child, null, {
-                                        'label_attr': {
-                                            class: 'text-base font-semibold text-gray-700 mb-2 block'
-                                        }
-                                    }) }}
-                                    {{ form_widget(child, {
-                                        attr: {
-                                            class: 'w-full border-2 border-gray-300 rounded-lg p-3 shadow-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ease-in-out'
-                                        }
-                                    }) }}
+                                <div>
+                                    {{ form_label(child, null, {'label_attr': {'class': 'font-medium text-gray-700'}}) }}
+                                    {{ form_widget(child, {'attr': {'class': 'w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500'}}) }}
                                     {{ form_errors(child) }}
                                 </div>
                             {% endif %}
                         {% endfor %}
-                        <div class="flex space-x-4">
-                            <button type="submit" class="flex-1 btn btn-secondary bg-gradient-to-r from-orange-700 to-orange-600 text-white py-3 px-6 rounded-2xl hover:from-orange-800 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all transform hover:scale-105">
-                                Soumettre Frais Hors Forfait
-                            </button>
-                        </div>
                     </div>
+                    <button type="submit" class="mt-6 w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded-md transition duration-200">Soumettre</button>
                     {{ form_end(formHorsForfait) }}
                 {% endif %}
             </div>
         </div>
 
-        <!-- Table for Frais Hors Forfait -->
+        <!-- Tableau Frais Hors Forfait -->
         {% if fraisHorsForfaitAffichage %}
-            <div class="mt-12 lg:mt-20 bg-white p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border-4 border-gray-100 transition-all duration-300 ease-in-out hover:shadow-3xl transform hover:scale-[1.02]">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 mb-6 lg:mb-8">
-                    Liste des Frais Hors Forfait
-                </h2>
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Frais Hors Forfait saisis</h2>
                 <div class="overflow-x-auto">
-                    <table class="w-full table-auto border-collapse bg-white text-base md:text-lg text-gray-700">
-                        <thead class="bg-gray-100 text-gray-900">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
                         <tr>
-                            <th class="px-4 lg:px-8 py-4 lg:py-6 text-left border-b border-gray-300">Date</th>
-                            <th class="px-4 lg:px-8 py-4 lg:py-6 text-left border-b border-gray-300">Libellé</th>
-                            <th class="px-4 lg:px-8 py-4 lg:py-6 text-left border-b border-gray-300">Montant</th>
-                            <th class="px-4 lg:px-8 py-4 lg:py-6 text-left border-b border-gray-300">Action</th>
+                            <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Date</th>
+                            <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Libellé</th>
+                            <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Montant</th>
+                            <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Action</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-gray-200">
                         {% for frais in fraisHorsForfaitAffichage %}
-                            <tr class="transition duration-300 ease-in-out hover:bg-gray-50 hover:scale-[1.02]">
-                                <td class="px-4 lg:px-8 py-4 lg:py-6 border-b border-gray-300">
-                                    {{ frais.date ? frais.date|date('d/m/Y') : 'N/A' }}
-                                </td>
-                                <td class="px-4 lg:px-8 py-4 lg:py-6 border-b border-gray-300">
-                                    {{ frais.libelle ?? 'Sans libellé' }}
-                                </td>
-                                <td class="px-4 lg:px-8 py-4 lg:py-6 border-b border-gray-300">
-                                    {{ frais.montant ? frais.montant|number_format(2, ',', ' ') ~ ' €' : '0,00 €' }}
-                                </td>
-                                <td class="px-4 lg:px-8 py-4 lg:py-6 border-b border-gray-300">
-                                    <form
-                                            method="post"
-                                            action="{{ path('app_delete_fiche_hors_forfait', {'id': frais.id}) }}"
-                                            class="inline"
-                                            onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette ligne de frais ?');"
-                                    >
-                                        <button
-                                                type="submit"
-                                                class="btn btn-danger bg-gradient-to-r from-red-700 to-red-600 text-white py-2 px-4 lg:py-3 lg:px-6 rounded-2xl hover:from-red-800 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all transform hover:scale-105"
-                                        >
-                                            Supprimer
-                                        </button>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4">{{ frais.date ? frais.date|date('d/m/Y') : 'N/A' }}</td>
+                                <td class="px-6 py-4">{{ frais.libelle ?? 'Sans libellé' }}</td>
+                                <td class="px-6 py-4">{{ frais.montant ? frais.montant|number_format(2, ',', ' ') ~ ' €' : '0,00 €' }}</td>
+                                <td class="px-6 py-4">
+                                    <form method="post" action="{{ path('app_delete_fiche_hors_forfait', {'id': frais.id}) }}" onsubmit="return confirm('Confirmer la suppression ?');">
+                                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm">Supprimer</button>
                                     </form>
                                 </td>
                             </tr>

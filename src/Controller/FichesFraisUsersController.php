@@ -1,8 +1,7 @@
 <?php
 
 namespace App\Controller;
-
-use App\Form\ModifEtatFicheType;
+use App\Form\ModifEtatType;
 use App\Repository\EtatRepository;
 use App\Repository\FicheFraisRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,62 +16,48 @@ class FichesFraisUsersController extends AbstractController
     public function index(FicheFraisRepository $ficheFraisRepository, EtatRepository $etatRepository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $changementEtat = false;
-
-        // Récupérer l'ID de la fiche via la query string (meilleure pratique que $_GET)
-        $ficheId = $request->query->get('id');
-        $ficheFrais = $ficheFraisRepository->find($ficheId);
-
-        // Vérification si la fiche de frais existe
-        if (!$ficheFrais) {
-            $this->addFlash('danger', 'Fiche de frais introuvable.');
-            return $this->redirectToRoute('homepage'); // Redirection si ID invalide
-        }
-
-        // Initialisation des totaux à 0 pour éviter les erreurs
-        $totalKm = $totalEtape = $totalNuit = $totalRepas = 0;
-
-        // Calcul des totaux en utilisant un switch plus lisible
-        foreach ($ficheFrais->getLigneFraisForfaits() as $ligne) {
-            switch ($ligne->getFraisForfait()->getId()) {
-                case 1:
-                    $totalKm = $ligne->getQuantite();
-                    break;
-                case 2:
-                    $totalEtape = $ligne->getQuantite();
-                    break;
-                case 3:
-                    $totalNuit = $ligne->getQuantite();
-                    break;
-                case 4:
-                    $totalRepas = $ligne->getQuantite();
-                    break;
+        $selectedFiche = $ficheFraisRepository->find($_GET['id']);
+        foreach ( $selectedFiche->getLigneFraisForfaits() as $ligne){
+            if($ligne->getFraisForfait()->getId() == 1){
+                $totalKm = $ligne->getQuantite();
+            } elseif ($ligne->getFraisForfait()->getId() == 2){
+                $totalEtape = $ligne->getQuantite();
+            } elseif ($ligne->getFraisForfait()->getId() == 3){
+                $totalNuit = $ligne->getQuantite();
+            } else {
+                $totalRepas = $ligne->getQuantite();
             }
         }
 
-        // Création du formulaire de modification d'état
-        $formEtat = $this->createForm(ModifEtatFicheType::class, null, [
+        $formEtat = $this->createForm(ModifEtatType::class, $selectedFiche, [
             'allEtat' => $etatRepository->findAll()
         ]);
         $formEtat->handleRequest($request);
 
-        // Traitement du formulaire soumis
-        if ($formEtat->isSubmitted() && $formEtat->isValid()) {
+        if($formEtat->isSubmitted() && $formEtat->isValid()) {
             $selectedEtat = $formEtat->get('etat')->getData();
-            $ficheFrais->setEtat($selectedEtat);
-            $ficheFrais->setDateModif(new \DateTime());
-
-            $entityManager->persist($ficheFrais);
+            $selectedFiche->setEtat($selectedEtat);
+            $selectedFiche->setDateModif(new \DateTimeImmutable());
+            $entityManager->persist($selectedFiche);
             $entityManager->flush();
-
-            $this->addFlash('success', 'L’état de la fiche de frais a été modifié avec succès.');
             $changementEtat = true;
+
+            return $this->render('fiches_frais_users/index.html.twig', [
+                'controller_name' => 'GestionComptableController',
+                'changeEtat' => $changementEtat,
+                'ficheDate' => $selectedFiche,
+                'totalKm' => $totalKm,
+                'totalEtape' => $totalEtape,
+                'totalNuit' => $totalNuit,
+                'totalRepas' => $totalRepas,
+                'formEtat' => $formEtat->createView(),
+            ]);
+
         }
 
-        // Rendu de la vue avec les données nécessaires
         return $this->render('fiches_frais_users/index.html.twig', [
             'controller_name' => 'MesFichesController',
-            'changeEtat' => $changementEtat,
-            'ficheFrais' => $ficheFrais,
+            'ficheDate' => $selectedFiche,
             'totalKm' => $totalKm,
             'totalEtape' => $totalEtape,
             'totalNuit' => $totalNuit,

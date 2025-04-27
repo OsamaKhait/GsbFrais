@@ -51,7 +51,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for ligne in selectedFiche.ligneFraisForfait %}
+                    {% for ligne in selectedFiche.ligneFraisForfaits %}
                         {% if ligne.fraisforfait is not null %}
                             <tr class="border-b border-gray-300">
                                 <td class="px-6 py-4">{{ ligne.quantite }}</td>
@@ -73,7 +73,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for ligneHors in selectedFiche.ligneFraisHorsForfait %}
+                    {% for ligneHors in selectedFiche.ligneFraisHorsForfaits %}
                         <tr class="border-b border-gray-300">
                             <td class="px-6 py-4">{{ ligneHors.libelle }}</td>
                             <td class="px-6 py-4">{{ ligneHors.montant }} €</td>
